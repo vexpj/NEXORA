@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>NEXORA</AssemblyName>
+    <RootNamespace>NEXORA.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\assets\NEXORA.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="..\..\assets\NEXORA.ico" Link="NEXORA.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NEXORA.Core\NEXORA.Core.csproj" />
+    <ProjectReference Include="..\NEXORA.Infrastructure\NEXORA.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

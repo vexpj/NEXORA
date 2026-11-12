@@ -1,0 +1,35 @@
+<Window x:Class="NEXORA.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:NEXORA.App.ViewModels"
+        xmlns:views="clr-namespace:NEXORA.App.Views"
+        Title="NEXORA" Icon="NEXORA.ico" Width="1100" Height="680" MinWidth="900" MinHeight="560"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource BackgroundBrush}">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:HomeViewModel}"><views:HomeView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PlaceholderPageViewModel}"><views:PlaceholderView /></DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Background="{StaticResource SurfaceBrush}" Padding="16,24">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top" Margin="8,0,0,28">
+                    <TextBlock Text="NEXORA" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" />
+                    <TextBlock Text="Minecraft Launcher" Style="{StaticResource Caption}" />
+                </StackPanel>
+                <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
+                         ItemContainerStyle="{StaticResource NavItem}"
+                         Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+            </DockPanel>
+        </Border>
+
+        <ContentControl Grid.Column="1" Content="{Binding SelectedPage}" Margin="40,32" />
+    </Grid>
+</Window>
