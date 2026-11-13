@@ -2,35 +2,69 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid Style="{StaticResource FadeInRoot}">
-        <StackPanel>
-            <TextBlock Text="Настройки" Style="{StaticResource PageTitle}" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="680" HorizontalAlignment="Left">
+                <TextBlock Text="Настройки" Style="{StaticResource PageTitle}" />
 
-            <Border Style="{StaticResource Card}" Margin="0,24,0,0" MaxWidth="640" HorizontalAlignment="Left">
-                <StackPanel>
-                    <TextBlock Text="Оперативная память" FontWeight="SemiBold" />
-                    <TextBlock Text="{Binding RamMb, StringFormat={}{0} МБ}" Foreground="{StaticResource AccentBrush}" Margin="0,4,0,0" />
-                    <Slider Minimum="{Binding MinRamMb}" Maximum="{Binding MaxRamMb}" Value="{Binding RamMb, Mode=TwoWay}"
-                            TickFrequency="512" IsSnapToTickEnabled="True" Margin="0,8,0,0" />
+                <Border Style="{StaticResource Card}" Margin="0,20,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Игра" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="Оперативная память" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding RamMb, StringFormat={}{0} МБ}" Foreground="{StaticResource AccentBrush}" Margin="0,4,0,0" />
+                        <Slider Minimum="{Binding MinRamMb}" Maximum="{Binding MaxRamMb}" Value="{Binding RamMb, Mode=TwoWay}"
+                                TickFrequency="512" IsSnapToTickEnabled="True" Margin="0,8,0,0" />
 
-                    <TextBlock Text="Папка Minecraft" FontWeight="SemiBold" Margin="0,20,0,6" />
-                    <DockPanel>
-                        <Button DockPanel.Dock="Right" Content="Обзор…" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="BrowseGameDirectory_Click" />
-                        <TextBox Text="{Binding GameDirectory, UpdateSourceTrigger=PropertyChanged}" />
-                    </DockPanel>
+                        <TextBlock Text="Папка Minecraft" FontWeight="SemiBold" Margin="0,18,0,6" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Открыть" Command="{Binding OpenGameDirCommand}" Style="{StaticResource GhostButton}" Margin="8,0,0,0" />
+                            <Button DockPanel.Dock="Right" Content="Обзор…" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="BrowseGameDirectory_Click" />
+                            <TextBox Text="{Binding GameDirectory, UpdateSourceTrigger=PropertyChanged}" />
+                        </DockPanel>
 
-                    <TextBlock Text="Java (javaw.exe)" FontWeight="SemiBold" Margin="0,20,0,6" />
-                    <DockPanel>
-                        <Button DockPanel.Dock="Right" Content="Обзор…" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="BrowseJava_Click" />
-                        <TextBox Text="{Binding JavaPath, UpdateSourceTrigger=PropertyChanged}" />
-                    </DockPanel>
-                    <TextBlock Text="Оставьте пустым — NEXORA подберёт Java автоматически (этап 6)." Style="{StaticResource Caption}" Margin="0,6,0,0" />
-
-                    <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
-                        <Button Content="Сохранить" Command="{Binding SaveCommand}" Style="{StaticResource AccentButton}" Padding="22,10" />
-                        <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="16,0,0,0" />
+                        <TextBlock Text="Java (javaw.exe)" FontWeight="SemiBold" Margin="0,18,0,6" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Обзор…" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="BrowseJava_Click" />
+                            <TextBox Text="{Binding JavaPath, UpdateSourceTrigger=PropertyChanged}" />
+                        </DockPanel>
+                        <TextBlock Text="Пусто — NEXORA сам скачает официальную Java от Mojang для нужной версии (рекомендуется)." Style="{StaticResource Caption}" Margin="0,6,0,8" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Найти установленные Java" Command="{Binding DetectJavaCommand}" Style="{StaticResource GhostButton}" Margin="0,0,10,0" />
+                            <ComboBox ItemsSource="{Binding FoundJava}" SelectedItem="{Binding SelectedJava, Mode=TwoWay}" DisplayMemberPath="Display" Width="300" />
+                        </StackPanel>
                     </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Подключения" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="Microsoft Client ID (для входа в аккаунт)" FontWeight="SemiBold" Margin="0,0,0,6" />
+                        <TextBox Text="{Binding MicrosoftClientId, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="Публичный идентификатор вашего приложения Azure — это не пароль. Как получить: docs/AUTH.md." Style="{StaticResource Caption}" Margin="0,6,0,0" />
+
+                        <TextBlock Text="CurseForge API-ключ (для каталога CurseForge)" FontWeight="SemiBold" Margin="0,18,0,6" />
+                        <TextBox Text="{Binding CurseForgeApiKey, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="Бесплатно на console.curseforge.com. Хранится на диске в зашифрованном виде (Windows DPAPI). Modrinth работает без ключа." Style="{StaticResource Caption}" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                    <Button Content="Сохранить" Command="{Binding SaveCommand}" Style="{StaticResource AccentButton}" Padding="22,10" />
+                    <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="16,0,0,0" />
                 </StackPanel>
-            </Border>
-        </StackPanel>
+
+                <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="Журнал последнего запуска" Style="{StaticResource SectionTitle}" />
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,10,0,0">
+                            <Button Content="Обновить" Command="{Binding RefreshLogCommand}" Style="{StaticResource GhostButton}" Margin="0,0,8,0" />
+                            <Button Content="Открыть папку журналов" Command="{Binding OpenLogsCommand}" Style="{StaticResource GhostButton}" />
+                        </StackPanel>
+                        <TextBox Style="{StaticResource LogBox}" Text="{Binding LogPreview, Mode=OneWay}" Height="220" />
+                    </DockPanel>
+                </Border>
+
+                <TextBlock Text="{Binding Version}" Style="{StaticResource Caption}" Margin="0,16,0,24" />
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

@@ -1,6 +1,21 @@
 # NEXORA Launcher
-Публичный лаунчер Minecraft Java Edition. C# / .NET 10 / WPF / MVVM.
+Публичный лаунчер Minecraft Java Edition. C# / .NET 10 / WPF / MVVM. Windows 10/11 x64.
 
-Сборка (Windows 10/11, .NET 10 SDK): `dotnet build NEXORA.sln`
-Запуск: `dotnet run --project src/NEXORA.App`
-Тесты: `dotnet test`
+## Возможности (v0.2.0)
+- Каталог версий Mojang (релизы, снапшоты, старые версии), установка и удаление, проверка SHA-1, повторы при ошибках
+- Официальная Java от Mojang скачивается автоматически; можно выбрать свою
+- Запуск игры: JVM/игровые аргументы, classpath, нативные библиотеки, ресурсы, журнал, защита от Log4Shell
+- Профили (отдельная папка на сборку), Fabric / Forge / NeoForge
+- Вход через Microsoft (браузер, PKCE) → Xbox → Minecraft; проверка владения игрой; токен под защитой Windows DPAPI
+- Смена скина, ника, плаща
+- Моды: Modrinth и CurseForge, обязательные зависимости, включение/отключение, удаление
+- Новости: заметки об обновлениях Minecraft (Mojang)
+- Установщик (Inno Setup), self-contained сборка
+
+## Безопасность
+Только HTTPS и список доверенных хостов; контрольные суммы всех файлов; защита от выхода за пределы папки;
+CurseForge-ключ и токены хранятся зашифрованно; пароли не запрашиваются.
+
+## Сборка
+Windows, .NET 10 SDK, Inno Setup 6: `.\build\build.ps1` → папка `dist\`.  Тесты: `dotnet test`.
+Вход Microsoft: см. `docs/AUTH.md`. Сборка и проверка установщика: `docs/BUILD.md`.

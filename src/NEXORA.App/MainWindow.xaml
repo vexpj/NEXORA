@@ -7,8 +7,11 @@
         WindowStartupLocation="CenterScreen" Background="{StaticResource BackgroundBrush}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:HomeViewModel}"><views:HomeView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:VersionsViewModel}"><views:VersionsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AccountViewModel}"><views:AccountView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ModsViewModel}"><views:ModsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:NewsViewModel}"><views:NewsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
-        <DataTemplate DataType="{x:Type vm:PlaceholderPageViewModel}"><views:PlaceholderView /></DataTemplate>
     </Window.Resources>
 
     <Grid>

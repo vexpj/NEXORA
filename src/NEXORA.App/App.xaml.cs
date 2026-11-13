@@ -1,6 +1,5 @@
 using System.Windows;
 using NEXORA.App.ViewModels;
-using NEXORA.Infrastructure.Settings;
 
 namespace NEXORA.App;
 
@@ -11,8 +10,12 @@ public partial class App : Application
         base.OnStartup(e);
 
         // Корень композиции: здесь собираются зависимости.
-        var settingsStore = new JsonSettingsStore(JsonSettingsStore.DefaultFilePath());
-        var window = new MainWindow { DataContext = new MainViewModel(settingsStore) };
+        DispatcherUnhandledException += (_, ex) =>
+        {
+            MessageBox.Show(ex.Exception.Message, "NEXORA — ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            ex.Handled = true;
+        };
+        var window = new MainWindow { DataContext = new MainViewModel(AppServices.Create()) };
         window.Show();
     }
 }

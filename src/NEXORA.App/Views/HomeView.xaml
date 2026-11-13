@@ -4,24 +4,41 @@
     <Grid Style="{StaticResource FadeInRoot}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <TextBlock Text="{Binding Welcome}" Style="{StaticResource PageTitle}" />
 
-        <Border Grid.Row="1" Style="{StaticResource Card}" VerticalAlignment="Bottom" Margin="0,0,0,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="{Binding VersionStatus}" FontSize="18" FontWeight="SemiBold" />
-                    <TextBlock Text="{Binding PlayHint}" Style="{StaticResource Caption}" Margin="0,6,0,0" MaxWidth="480" HorizontalAlignment="Left" />
-                </StackPanel>
-                <!-- Кнопка отключена, пока нет реального движка запуска (этапы 2–7). -->
-                <Button Grid.Column="1" Content="ИГРАТЬ" IsEnabled="False" Style="{StaticResource AccentButton}" MinWidth="160" />
-            </Grid>
+        <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,20,0,16">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Профиль" Style="{StaticResource Caption}" Margin="0,0,0,6" />
+                        <ComboBox ItemsSource="{Binding Profiles.Items}" SelectedItem="{Binding Profiles.Selected, Mode=TwoWay}"
+                                  DisplayMemberPath="Display" MaxWidth="440" HorizontalAlignment="Left" MinWidth="300" />
+                        <TextBlock Text="{Binding NoProfileHint}" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding AccountText}" Style="{StaticResource Caption}" Margin="0,8,0,0" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="Остановить" Command="{Binding StopCommand}" Style="{StaticResource GhostButton}" Margin="0,0,12,0" />
+                        <Button Content="ИГРАТЬ" Command="{Binding PlayCommand}" Style="{StaticResource AccentButton}" MinWidth="160" />
+                    </StackPanel>
+                </Grid>
+                <ProgressBar Value="{Binding Progress}" Maximum="100" Margin="0,18,0,8" />
+                <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" />
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2" Style="{StaticResource Card}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="Журнал игры" Style="{StaticResource SectionTitle}" />
+                <TextBox x:Name="LogBox" Style="{StaticResource LogBox}" Text="{Binding LogText, Mode=OneWay}" />
+            </DockPanel>
         </Border>
     </Grid>
 </UserControl>

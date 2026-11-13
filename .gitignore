@@ -4,3 +4,19 @@ obj/
 *.user
 *.suo
 dist/
+
+# --- Секреты и личные данные: никогда не коммитить ---
+.env
+.env.*
+*.pfx
+*.p12
+*.pem
+*.key
+*.snk
+*.cer
+secrets.json
+appsettings.Development.json
+settings.json
+account.json
+profiles.json
+*.log

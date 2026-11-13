@@ -5,11 +5,18 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read   # минимальные права: сборка не может ничего менять в репозитории
+
 jobs:
   build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Secret scan
+        shell: pwsh
+        run: python build/check_secrets.py
 
       - uses: actions/setup-dotnet@v4
         with:
