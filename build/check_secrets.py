@@ -5,8 +5,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# Check only filenames that are commonly used to store secret material.
+# Do not match directory names such as Auth/ or ordinary source/docs files
+# such as AuthModels.cs and AUTH.md.
 BAD_FILE = re.compile(
-    r"(?:^|/)(?:.*(?:secret|token|key|credential|auth|password|cert|pfx|pem|key|private).*|.*(?:\.pem|\.pfx|\.key|\.jks|\.keystore|\.p12)$)",
+    r"(?:^|/)(?:"
+    r"\.env(?:\.[^/]*)?|"
+    r"(?:secrets?|credentials?|passwords?|tokens?)(?:[._-][^/]*)?|"
+    r"(?:id_rsa|id_ed25519|private_key)(?:\.pub)?|"
+    r"[^/]+\.(?:pem|pfx|key|jks|keystore|p12)"
+    r")$",
     re.IGNORECASE,
 )
 
