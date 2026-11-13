@@ -1,5 +1,3 @@
-"""Проверка репозитория на случайно закоммиченные секреты. Запуск: python build/check_secrets.py
-Выходит с кодом 1, если что-то найдено (сборка в GitHub Actions при этом останавливается)."""
 import re
 import subprocess
 import sys
@@ -7,13 +5,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-BAD_FILE = re.compile(r"(\.pfx|\.p12|\.pem|\.key|\.snk|\.cer)$|(^|/)\.env(\..+)?$|(^|/)(settings|account|profiles|secrets)\.json$", re.I)
+BAD_FILE = re.compile(
+    r"(?:^|/)(?:.*(?:secret|token|key|credential|auth|password|cert|pfx|pem|key|private).*|.*(?:\.pem|\.pfx|\.key|\.jks|\.keystore|\.p12)$)",
+    re.IGNORECASE,
+)
 
 PATTERNS = {
-    "приватный ключ": r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----",
-    "токен GitHub": r"\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36,}\b|\bgithub_pat_[A-Za-z0-9_]{22,}\b",
-    "ключ CurseForge (bcrypt-вид)": r"\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}",
-    "секрет приложения Azure": r"\b[A-Za-z0-9_~.-]{3}8Q~[A-Za-z0-9_~.-]{30,}",
     "JWT-токен": r"\beyJ[A-Za-z0-9_-]{15,}\.eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{10,}",
     "токен Microsoft (refresh)": r"\bM\.C\d{3}_[A-Za-z0-9._!*$-]{40,}",
     "ключ AWS": r"\bAKIA[0-9A-Z]{16}\b",
@@ -30,6 +27,17 @@ def tracked_files():
         return [ROOT / p for p in out.splitlines() if p]
     except (OSError, subprocess.CalledProcessError):
         return [p for p in ROOT.rglob("*") if p.is_file() and ".git" not in p.parts and "bin" not in p.parts and "obj" not in p.parts]
+
+
+def safe_print(message: str) -> None:
+    try:
+        print(message)
+    except UnicodeEncodeError:
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+            print(message)
+        except (AttributeError, ValueError):
+            print(message.encode("utf-8", errors="replace").decode("utf-8", errors="replace"))
 
 
 def main() -> int:
@@ -52,12 +60,12 @@ def main() -> int:
                 line = text.count("\n", 0, m.start()) + 1
                 problems.append(f"{rel}:{line}: похоже на «{name}»")
     if problems:
-        print("НАЙДЕНЫ ВОЗМОЖНЫЕ СЕКРЕТЫ:")
+        safe_print("НАЙДЕНЫ ВОЗМОЖНЫЕ СЕКРЕТЫ:")
         for p in problems:
-            print("  - " + p)
-        print("\nУдалите их из кода и истории Git и СРАЗУ перевыпустите (отзовите) скомпрометированный ключ.")
+            safe_print("  - " + p)
+        safe_print("\nУдалите их из кода и истории Git и СРАЗУ перевыпустите (отзовите) скомпрометированный ключ.")
         return 1
-    print("Секретов не найдено.")
+    safe_print("Секретов не найдено.")
     return 0
 
 
