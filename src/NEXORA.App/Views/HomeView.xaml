@@ -29,7 +29,7 @@
                         <Button Content="ИГРАТЬ" Command="{Binding PlayCommand}" Style="{StaticResource AccentButton}" MinWidth="160" />
                     </StackPanel>
                 </Grid>
-                <ProgressBar Value="{Binding Progress}" Maximum="100" Margin="0,18,0,8" />
+                <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Margin="0,18,0,8" />
                 <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" />
             </StackPanel>
         </Border>
