@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using NEXORA.App.Mvvm;
 using NEXORA.Core.Models;
 using NEXORA.Infrastructure.Minecraft;
