@@ -59,7 +59,7 @@ public sealed class LaunchService
             GameDirectory = gameDir, AssetsRoot = _paths.Assets, AssetsIndexName = installed.AssetsIndexName,
             GameAssetsDir = installed.GameAssetsDir, LibraryDirectory = _paths.Libraries, NativesDirectory = installed.NativesDir,
             Classpath = installed.Classpath, RamMb = profile.RamMb ?? settings.RamMb, ExtraJvmArgs = profile.JvmArgs,
-            LoggingConfigPath = installed.LoggingConfigPath, ClientId = settings.MicrosoftClientId, Server = server,
+            LoggingConfigPath = installed.LoggingConfigPath, ClientId = NEXORA.Core.Auth.AuthDefaults.Resolve(settings.MicrosoftClientId), Server = server,
         };
         var args = LaunchArgumentsBuilder.Build(installed.Info, ctx);
 

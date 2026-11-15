@@ -25,6 +25,9 @@ public abstract class ObservableObject : INotifyPropertyChanged
 /// <summary>Выполняет действие в потоке интерфейса (события служб могут приходить из других потоков).</summary>
 public static class Ui
 {
+    /// <summary>Выводит окно лаунчера на передний план (после входа в браузере).</summary>
+    public static void Activate() => Run(() => Application.Current?.MainWindow?.Activate());
+
     public static bool CopyText(string text)
     {
         try { Clipboard.SetText(text); return true; }

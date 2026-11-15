@@ -79,7 +79,7 @@ public sealed class AppServices
             SettingsStore = settingsStore, Settings = settings, Paths = paths, Http = http,
             Versions = versions, Installer = installer, Java = java, Loaders = loaders,
             Launcher = new LaunchService(paths, installer, java, loaders),
-            Account = new AccountService(new MicrosoftAuthService(http), new JsonAccountStore(Path.Combine(dataDir, "account.json"), protector), http, () => settings.MicrosoftClientId),
+            Account = new AccountService(new MicrosoftAuthService(http), new JsonAccountStore(Path.Combine(dataDir, "account.json"), protector), http, () => NEXORA.Core.Auth.AuthDefaults.Resolve(settings.MicrosoftClientId)),
             Modrinth = new ModrinthCatalog(http),
             CurseForge = new CurseForgeCatalog(http, () => settings.CurseForgeApiKey),
             Mods = mods,

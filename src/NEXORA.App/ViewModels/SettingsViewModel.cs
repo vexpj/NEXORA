@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using NEXORA.App.Mvvm;
 using NEXORA.Core.Appearance;
+using NEXORA.Core.Auth;
 using NEXORA.Core.Models;
 using NEXORA.Infrastructure.Minecraft;
 
@@ -102,6 +103,8 @@ public sealed class SettingsViewModel : PageViewModel
 
     private void Save()
     {
+        if (!string.IsNullOrWhiteSpace(MicrosoftClientId) && !AuthDefaults.IsValidClientId(MicrosoftClientId))
+        { Status = "Client ID выглядит неверно: он должен быть вида xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx."; return; }
         try
         {
             var n = new LauncherSettings

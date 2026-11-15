@@ -12,7 +12,20 @@
                     <StackPanel>
                         <TextBlock Text="Вход через Microsoft" Style="{StaticResource SectionTitle}" />
                         <TextBlock Text="{Binding SetupHint}" Style="{StaticResource Caption}" Margin="0,0,0,14" />
-                        <Button Content="Войти через Microsoft" Command="{Binding LoginCommand}" Style="{StaticResource AccentButton}" HorizontalAlignment="Left" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Войти через Microsoft" Command="{Binding LoginCommand}" Style="{StaticResource AccentButton}" Margin="0,0,10,0" />
+                            <Button Content="Отмена" Command="{Binding CancelLoginCommand}" Style="{StaticResource GhostButton}"
+                                    Visibility="{Binding IsLoggingIn, Converter={StaticResource BoolToVis}}" />
+                        </StackPanel>
+                        <StackPanel Margin="0,16,0,0" Visibility="{Binding NeedsSetup, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="Для разработчика лаунчера (один раз):" Style="{StaticResource Caption}" Margin="0,0,0,8" />
+                            <WrapPanel>
+                                <Button Content="1. Создать приложение в Azure" Style="{StaticResource GhostButton}" Margin="0,0,8,6"
+                                        Command="{Binding OpenSetupLinkCommand}" CommandParameter="https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" />
+                                <Button Content="2. Подать заявку в Mojang" Style="{StaticResource GhostButton}" Margin="0,0,8,6"
+                                        Command="{Binding OpenSetupLinkCommand}" CommandParameter="https://aka.ms/mce-reviewappid" />
+                            </WrapPanel>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

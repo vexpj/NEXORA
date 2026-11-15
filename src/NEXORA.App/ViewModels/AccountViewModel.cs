@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using NEXORA.App.Mvvm;
+using System.Diagnostics;
 using NEXORA.Core.Auth;
 using NEXORA.Infrastructure.Auth;
 
@@ -12,12 +13,16 @@ public sealed class AccountViewModel : PageViewModel
     private bool _slim;
     private string _newName = "";
     private CapeInfo? _cape;
+    private CancellationTokenSource? _loginCts;
+    private bool _isLoggingIn;
 
     public AccountViewModel(AppServices s) : base("Аккаунт", "\uE77B")
     {
         _s = s;
         s.Account.Changed += () => Ui.Run(Refresh);
         LoginCommand = new AsyncRelayCommand(LoginAsync, () => !IsLoggedIn, Fail);
+        CancelLoginCommand = new RelayCommand(() => _loginCts?.Cancel(), () => IsLoggingIn);
+        OpenSetupLinkCommand = new RelayCommand(p => OpenSetupLink(p as string));
         LogoutCommand = new RelayCommand(() => { _s.Account.Logout(); Status = "Вы вышли из аккаунта."; }, () => IsLoggedIn);
         UploadSkinCommand = new AsyncRelayCommand(p => UploadSkinAsync((string?)p), () => IsLoggedIn, Fail);
         CheckNameCommand = new AsyncRelayCommand(CheckNameAsync, () => IsLoggedIn && !string.IsNullOrWhiteSpace(NewName), Fail);
@@ -34,8 +39,11 @@ public sealed class AccountViewModel : PageViewModel
     public string PlayerId => _s.Account.Current?.Profile.Id is { Length: 32 } id
         ? $"{id[..8]}-{id[8..12]}-{id[12..16]}-{id[16..20]}-{id[20..]}" : "";
     public string? SkinUrl => _s.Account.Current?.Profile.ActiveSkin?.Url;
-    public string SetupHint => string.IsNullOrWhiteSpace(_s.Settings.MicrosoftClientId)
-        ? "Сначала укажите Client ID приложения Microsoft в «Настройках» (инструкция — docs/AUTH.md)." : "Вход откроется в вашем браузере. Пароль в лаунчере не вводится.";
+    public bool NeedsSetup => AuthDefaults.Resolve(_s.Settings.MicrosoftClientId) is null;
+    public bool IsLoggingIn { get => _isLoggingIn; private set => SetProperty(ref _isLoggingIn, value); }
+    public string SetupHint => NeedsSetup
+        ? "Вход через Microsoft ещё не настроен: нужен Client ID приложения Azure, одобренный Mojang. Это делается один раз (разработчиком лаунчера) — инструкция в docs/AUTH.md."
+        : "Нажмите кнопку: откроется сайт Microsoft, подтвердите вход и вернитесь в лаунчер. Пароль в лаунчере не вводится.";
 
     public string Status { get => _status; private set => SetProperty(ref _status, value); }
     public bool SlimArms { get => _slim; set => SetProperty(ref _slim, value); }
@@ -43,6 +51,8 @@ public sealed class AccountViewModel : PageViewModel
     public CapeInfo? SelectedCape { get => _cape; set => SetProperty(ref _cape, value); }
 
     public AsyncRelayCommand LoginCommand { get; }
+    public RelayCommand CancelLoginCommand { get; }
+    public RelayCommand OpenSetupLinkCommand { get; }
     public RelayCommand LogoutCommand { get; }
     public AsyncRelayCommand UploadSkinCommand { get; }
     public AsyncRelayCommand CheckNameCommand { get; }
@@ -55,16 +65,24 @@ public sealed class AccountViewModel : PageViewModel
         Capes.Clear();
         if (_s.Account.Current is { } c) foreach (var cape in c.Profile.Capes) Capes.Add(cape);
         SelectedCape = _s.Account.Current?.Profile.ActiveCape ?? Capes.FirstOrDefault();
-        foreach (var n in new[] { nameof(IsLoggedIn), nameof(IsLoggedOut), nameof(PlayerName), nameof(PlayerId), nameof(SkinUrl), nameof(SetupHint) })
+        foreach (var n in new[] { nameof(IsLoggedIn), nameof(IsLoggedOut), nameof(PlayerName), nameof(PlayerId), nameof(SkinUrl), nameof(SetupHint), nameof(NeedsSetup) })
             OnPropertyChanged(n);
         System.Windows.Input.CommandManager.InvalidateRequerySuggested();
     }
 
     private async Task LoginAsync()
     {
-        Status = "Открыт браузер: войдите в аккаунт Microsoft…";
-        var s = await _s.Account.LoginAsync(CancellationToken.None);
-        Status = "Вход выполнен: " + s.Profile.Name;
+        Status = "Открыт браузер: подтвердите вход на сайте Microsoft…";
+        _loginCts = new CancellationTokenSource();
+        IsLoggingIn = true;
+        try
+        {
+            var s = await _s.Account.LoginAsync(_loginCts.Token);
+            Status = "Вход выполнен: " + s.Profile.Name;
+            Ui.Activate();
+        }
+        catch (OperationCanceledException) { Status = "Вход отменён."; }
+        finally { IsLoggingIn = false; _loginCts?.Dispose(); _loginCts = null; }
     }
 
     private async Task<MinecraftSession> Token() => await _s.Account.EnsureValidAsync(CancellationToken.None);
@@ -110,6 +128,19 @@ public sealed class AccountViewModel : PageViewModel
         await MinecraftProfileApi.SetCapeAsync(HttpOf(), session.AccessToken, null, CancellationToken.None);
         await _s.Account.ReloadProfileAsync(CancellationToken.None);
         Status = "Плащ снят.";
+    }
+
+    private static readonly HashSet<string> SetupLinks = new()
+    {
+        "https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade",
+        "https://aka.ms/mce-reviewappid",
+        "https://minecraft.wiki/w/Microsoft_authentication",
+    };
+
+    private void OpenSetupLink(string? url)
+    {
+        if (url is null || !SetupLinks.Contains(url)) return;
+        Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     }
 
     private NEXORA.Infrastructure.Net.SafeHttp HttpOf() => _s.Http;

@@ -66,9 +66,9 @@
                 <Border Style="{StaticResource Card}" Margin="0,16,0,0">
                     <StackPanel>
                         <TextBlock Text="Подключения" Style="{StaticResource SectionTitle}" />
-                        <TextBlock Text="Microsoft Client ID (для входа в аккаунт)" FontWeight="SemiBold" Margin="0,0,0,6" />
+                        <TextBlock Text="Свой Microsoft Client ID (необязательно, для разработчиков)" FontWeight="SemiBold" Margin="0,0,0,6" />
                         <TextBox Text="{Binding MicrosoftClientId, UpdateSourceTrigger=PropertyChanged}" />
-                        <TextBlock Text="Публичный идентификатор вашего приложения Azure — это не пароль. Как получить: docs/AUTH.md." Style="{StaticResource Caption}" Margin="0,6,0,0" />
+                        <TextBlock Text="Обычно пусто: вход уже встроен в лаунчер. Нужен, только если вы тестируете своё приложение Azure (docs/AUTH.md)." Style="{StaticResource Caption}" Margin="0,6,0,0" />
 
                         <TextBlock Text="CurseForge API-ключ (для каталога CurseForge)" FontWeight="SemiBold" Margin="0,18,0,6" />
                         <TextBox Text="{Binding CurseForgeApiKey, UpdateSourceTrigger=PropertyChanged}" />

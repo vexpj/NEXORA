@@ -19,7 +19,7 @@ public sealed class AccountService
     public event Action? Changed;
 
     private string RequireClientId() => _clientId() ??
-        throw new AuthException("Не указан Client ID приложения Microsoft. Откройте «Настройки» и вставьте его (инструкция в docs/AUTH.md).");
+        throw new AuthException("Вход через Microsoft ещё не настроен: в лаунчер не встроен Client ID приложения. Инструкция — docs/AUTH.md.");
 
     public async Task<MinecraftSession?> RestoreAsync(CancellationToken ct)
     {

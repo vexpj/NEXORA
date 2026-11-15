@@ -277,6 +277,25 @@ public class ServerTests
     }
 }
 
+public class AuthDefaultsTests
+{
+    [Fact]
+    public void ClientIdValidationAndResolution()
+    {
+        const string id = "11111111-2222-3333-4444-555555555555";
+        Assert.True(NEXORA.Core.Auth.AuthDefaults.IsValidClientId(id));
+        Assert.True(NEXORA.Core.Auth.AuthDefaults.IsValidClientId("  " + id + " "));
+        Assert.False(NEXORA.Core.Auth.AuthDefaults.IsValidClientId("abc"));
+        Assert.False(NEXORA.Core.Auth.AuthDefaults.IsValidClientId(""));
+        Assert.False(NEXORA.Core.Auth.AuthDefaults.IsValidClientId(null));
+        Assert.Equal(id, NEXORA.Core.Auth.AuthDefaults.Resolve(" " + id + " "));
+        // без своего значения берётся встроенное (если оно задано), иначе вход «не настроен»
+        var builtIn = NEXORA.Core.Auth.AuthDefaults.IsValidClientId(NEXORA.Core.Auth.AuthDefaults.DefaultClientId) ? NEXORA.Core.Auth.AuthDefaults.DefaultClientId : null;
+        Assert.Equal(builtIn, NEXORA.Core.Auth.AuthDefaults.Resolve(null));
+        Assert.Equal(builtIn, NEXORA.Core.Auth.AuthDefaults.Resolve("не guid"));
+    }
+}
+
 public class PerfAndAppearanceTests
 {
     [Fact]
