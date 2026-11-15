@@ -33,19 +33,7 @@
                         <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Margin="0,18,0,8" />
                         <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" />
                     </StackPanel>
-<<<<<<< Updated upstream
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="Остановить" Command="{Binding StopCommand}" Style="{StaticResource GhostButton}" Margin="0,0,12,0" />
-                        <Button Content="ИГРАТЬ" Command="{Binding PlayCommand}" Style="{StaticResource AccentButton}" MinWidth="160" />
-                    </StackPanel>
-                </Grid>
-                <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" Margin="0,18,0,8" />
-                <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" />
-            </StackPanel>
-        </Border>
-=======
                 </Border>
->>>>>>> Stashed changes
 
                 <!-- Что пошло не так -->
                 <Border Style="{StaticResource Card}" Margin="0,0,0,16" Visibility="{Binding HasProblems, Converter={StaticResource BoolToVis}}">

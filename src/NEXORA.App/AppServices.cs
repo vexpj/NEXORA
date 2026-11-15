@@ -21,7 +21,7 @@ namespace NEXORA.App;
 /// <summary>Корень композиции: здесь создаются и связываются все службы.</summary>
 public sealed class AppServices
 {
-    public const string LauncherVersion = "0.3.0";
+    public const string LauncherVersion = "0.3.1";
 
     public required ISettingsStore SettingsStore { get; init; }
     public required LauncherSettings Settings { get; init; }
