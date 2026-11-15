@@ -3,6 +3,13 @@
 import re
 import subprocess
 import sys
+
+# Консоль Windows в GitHub Actions по умолчанию cp1252 и не умеет печатать русский текст.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent

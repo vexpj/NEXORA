@@ -16,6 +16,8 @@ jobs:
 
       - name: Secret scan
         shell: pwsh
+        env:
+          PYTHONUTF8: "1"
         run: python build/check_secrets.py
 
       - uses: actions/setup-dotnet@v4
