@@ -19,6 +19,14 @@ public partial class SettingsView : UserControl
             ViewModel.GameDirectory = dialog.FolderName;
     }
 
+    private void BrowseBackground_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null) return;
+        var dialog = new OpenFileDialog { Title = "Выберите фоновую картинку", Filter = "Изображения|*.png;*.jpg;*.jpeg;*.bmp" };
+        if (dialog.ShowDialog() == true)
+            ViewModel.BackgroundImagePath = dialog.FileName;
+    }
+
     private void BrowseJava_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel is null) return;

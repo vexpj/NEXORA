@@ -3,11 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:NEXORA.App.ViewModels"
         xmlns:views="clr-namespace:NEXORA.App.Views"
-        Title="NEXORA" Icon="NEXORA.ico" Width="1100" Height="680" MinWidth="900" MinHeight="560"
-        WindowStartupLocation="CenterScreen" Background="{StaticResource BackgroundBrush}">
+        Title="NEXORA" Icon="NEXORA.ico" Width="1180" Height="720" MinWidth="960" MinHeight="600"
+        WindowStartupLocation="CenterScreen" Background="{DynamicResource BackgroundBrush}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:HomeViewModel}"><views:HomeView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:VersionsViewModel}"><views:VersionsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ServersViewModel}"><views:ServersView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:AccountViewModel}"><views:AccountView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ModsViewModel}"><views:ModsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:NewsViewModel}"><views:NewsView /></DataTemplate>
@@ -15,24 +16,34 @@
     </Window.Resources>
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="230" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+        <!-- Свой фон из настроек оформления -->
+        <Image Source="{Binding BackgroundImage}" Stretch="UniformToFill" Opacity="{Binding BackgroundOpacity}" IsHitTestVisible="False" />
 
-        <Border Background="{StaticResource SurfaceBrush}" Padding="16,24">
-            <DockPanel LastChildFill="True">
-                <StackPanel DockPanel.Dock="Top" Margin="8,0,0,28">
-                    <TextBlock Text="NEXORA" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" />
-                    <TextBlock Text="Minecraft Launcher" Style="{StaticResource Caption}" />
-                </StackPanel>
-                <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
-                         ItemContainerStyle="{StaticResource NavItem}"
-                         Background="Transparent" BorderThickness="0"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
-            </DockPanel>
-        </Border>
+        <DockPanel>
+            <Border Width="{Binding SidebarWidth}" Background="{DynamicResource SurfaceBrush}" Padding="12,24">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="DockPanel.Dock" Value="Left" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SidebarRight}" Value="True">
+                                <Setter Property="DockPanel.Dock" Value="Right" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <DockPanel LastChildFill="True">
+                    <StackPanel DockPanel.Dock="Top" Margin="8,0,0,24">
+                        <TextBlock Text="{Binding LogoText}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                        <TextBlock Text="Minecraft Launcher" Style="{StaticResource Caption}"
+                                   Visibility="{Binding ShowNavLabels, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                    <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
+                             ItemContainerStyle="{StaticResource NavItem}" Background="Transparent" BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                </DockPanel>
+            </Border>
 
-        <ContentControl Grid.Column="1" Content="{Binding SelectedPage}" Margin="40,32" />
+            <ContentControl Content="{Binding SelectedPage}" Margin="40,32" />
+        </DockPanel>
     </Grid>
 </Window>

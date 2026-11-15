@@ -1,0 +1,66 @@
+<UserControl x:Class="NEXORA.App.Views.ServersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Style="{StaticResource FadeInRoot}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,0,12,24">
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Обновить" Command="{Binding RefreshCommand}" Style="{StaticResource GhostButton}" VerticalAlignment="Center" />
+                    <TextBlock Text="Серверы" Style="{StaticResource PageTitle}" />
+                </DockPanel>
+                <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,8,0,16" />
+
+                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="Добавить в избранное" Style="{StaticResource SectionTitle}" />
+                        <WrapPanel>
+                            <TextBox Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}" Width="200" Margin="0,0,10,8" />
+                            <TextBox Text="{Binding NewAddress, UpdateSourceTrigger=PropertyChanged}" Width="280" Margin="0,0,10,8">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Command="{Binding AddCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <Button Content="Добавить" Command="{Binding AddCommand}" Style="{StaticResource AccentButton}" Padding="20,8" FontSize="13" Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <TextBlock Text="Название и адрес (play.example.com или play.example.com:25570). Для запуска используется текущий выбранный профиль." Style="{StaticResource Caption}" />
+                    </StackPanel>
+                </Border>
+
+                <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Margin="0,0,0,10" Padding="18">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Ellipse Width="12" Height="12" Fill="{Binding StateColor}" VerticalAlignment="Top" Margin="0,5,14,0" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock FontSize="16" FontWeight="SemiBold" Text="{Binding Name}" />
+                                        <TextBlock Style="{StaticResource Caption}">
+                                            <Run Text="{Binding Address, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding Status, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding Players, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding Ping, Mode=OneWay}" />
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding Motd}" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                                        <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0">
+                                            <Run Text="Профиль: " /><Run Text="{Binding ProfileName, Mode=OneWay}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Content="Играть" Style="{StaticResource AccentButton}" Padding="18,8" FontSize="13" Margin="0,0,8,0"
+                                                Command="{Binding DataContext.PlayCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}" />
+                                        <Button Content="Удалить" Style="{StaticResource GhostButton}"
+                                                Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

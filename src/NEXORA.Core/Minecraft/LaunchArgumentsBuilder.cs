@@ -1,3 +1,5 @@
+using NEXORA.Core.Servers;
+
 namespace NEXORA.Core.Minecraft;
 
 public sealed class LaunchContext
@@ -20,7 +22,9 @@ public sealed class LaunchContext
     public string? ExtraJvmArgs { get; set; }
     public string? LoggingConfigPath { get; set; }
     public string LauncherName { get; set; } = "NEXORA";
-    public string LauncherVersion { get; set; } = "0.2.0";
+    public string LauncherVersion { get; set; } = "0.3.0";
+    /// <summary>Сервер, к которому нужно сразу подключиться при запуске.</summary>
+    public ServerEndpoint? Server { get; set; }
 }
 
 public static class LaunchArgumentsBuilder
@@ -50,7 +54,12 @@ public static class LaunchArgumentsBuilder
             ["launcher_version"] = c.LauncherVersion,
             ["clientid"] = c.ClientId ?? "",
             ["auth_xuid"] = "",
+            ["quickPlayMultiplayer"] = c.Server?.ToString() ?? "",
         };
+
+        // Новые версии (1.20+) описывают быстрое подключение через функцию; старые понимают --server/--port.
+        var quickPlay = v.GameArgs.Any(e => e.Rules.Any(r => r.Features?.ContainsKey("is_quick_play_multiplayer") == true));
+        ISet<string>? features = c.Server is not null && quickPlay ? new HashSet<string> { "is_quick_play_multiplayer" } : null;
 
         var result = new List<string> { $"-Xmx{c.RamMb}M", $"-Xms{Math.Min(512, c.RamMb)}M" };
         if (!string.IsNullOrWhiteSpace(c.ExtraJvmArgs))
@@ -76,15 +85,17 @@ public static class LaunchArgumentsBuilder
         if (v.MinecraftArguments is not null && v.GameArgs.Count == 0)
             result.AddRange(v.MinecraftArguments.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(a => Sub(a, map)));
         else
-            result.AddRange(Expand(v.GameArgs, map));
+            result.AddRange(Expand(v.GameArgs, map, features));
+        if (c.Server is { } srv && !quickPlay)
+        { result.Add("--server"); result.Add(srv.Host); result.Add("--port"); result.Add(srv.Port.ToString()); }
         return result;
     }
 
-    private static List<string> Expand(IEnumerable<ArgumentEntry> entries, Dictionary<string, string> map)
+    private static List<string> Expand(IEnumerable<ArgumentEntry> entries, Dictionary<string, string> map, ISet<string>? features = null)
     {
         var list = new List<string>();
         foreach (var e in entries)
-            if (RuleEvaluator.IsAllowed(e.Rules))
+            if (RuleEvaluator.IsAllowed(e.Rules, features))
                 list.AddRange(e.Values.Select(x => Sub(x, map)));
         return list;
     }

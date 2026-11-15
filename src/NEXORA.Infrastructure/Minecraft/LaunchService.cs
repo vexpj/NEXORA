@@ -2,6 +2,7 @@ using System.Diagnostics;
 using NEXORA.Core.Auth;
 using NEXORA.Core.Minecraft;
 using NEXORA.Core.Models;
+using NEXORA.Core.Servers;
 using NEXORA.Infrastructure.Loaders;
 
 namespace NEXORA.Infrastructure.Minecraft;
@@ -9,8 +10,10 @@ namespace NEXORA.Infrastructure.Minecraft;
 public sealed class GameProcess
 {
     private readonly Process _process;
-    public GameProcess(Process p, string logPath) { _process = p; LogPath = logPath; }
+    public GameProcess(Process p, string logPath) { _process = p; LogPath = logPath; StartedUtc = DateTime.UtcNow; }
     public string LogPath { get; }
+    public DateTime StartedUtc { get; }
+    public int Id => _process.Id;
     public bool HasExited => _process.HasExited;
     public void Kill() { try { _process.Kill(true); } catch (InvalidOperationException) { } }
 }
@@ -27,7 +30,7 @@ public sealed class LaunchService
 
     /// <summary>Устанавливает всё недостающее и запускает игру. onProfileChanged вызывается, если у профиля появился id версии загрузчика.</summary>
     public async Task<GameProcess> LaunchAsync(GameProfile profile, MinecraftSession session, LauncherSettings settings,
-        IProgress<InstallProgress>? progress, Action<string> onLine, Action<int> onExit, Action<GameProfile> onProfileChanged, CancellationToken ct)
+        IProgress<InstallProgress>? progress, Action<string> onLine, Action<int> onExit, Action<GameProfile> onProfileChanged, ServerEndpoint? server, CancellationToken ct)
     {
         var gameDir = _paths.InstanceDir(profile.Id);
         Directory.CreateDirectory(Path.Combine(gameDir, "mods"));
@@ -56,7 +59,7 @@ public sealed class LaunchService
             GameDirectory = gameDir, AssetsRoot = _paths.Assets, AssetsIndexName = installed.AssetsIndexName,
             GameAssetsDir = installed.GameAssetsDir, LibraryDirectory = _paths.Libraries, NativesDirectory = installed.NativesDir,
             Classpath = installed.Classpath, RamMb = profile.RamMb ?? settings.RamMb, ExtraJvmArgs = profile.JvmArgs,
-            LoggingConfigPath = installed.LoggingConfigPath, ClientId = settings.MicrosoftClientId,
+            LoggingConfigPath = installed.LoggingConfigPath, ClientId = settings.MicrosoftClientId, Server = server,
         };
         var args = LaunchArgumentsBuilder.Build(installed.Info, ctx);
 

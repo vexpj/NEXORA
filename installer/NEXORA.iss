@@ -30,6 +30,7 @@ Compression=lzma2/ultra
 SolidCompression=yes
 WizardStyle=modern
 ; Обновление поверх запущенного лаунчера: закрыть и перезапустить его
+ChangesAssociations=yes
 CloseApplications=yes
 RestartApplications=yes
 
@@ -41,6 +42,13 @@ Name: "desktopicon"; Description: "Создать ярлык на рабочем
 
 [Files]
 Source: "..\dist\publish\{#AppExe}"; DestDir: "{app}"; Flags: ignoreversion
+
+[Registry]
+; Двойной щелчок по файлу сборки открывает его в NEXORA (установка начинается только после подтверждения)
+Root: HKA; Subkey: "Software\Classes\.nexora-pack"; ValueType: string; ValueData: "NEXORA.Pack"; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\NEXORA.Pack"; ValueType: string; ValueData: "Сборка NEXORA"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\NEXORA.Pack\DefaultIcon"; ValueType: string; ValueData: "{app}\{#AppExe},0"
+Root: HKA; Subkey: "Software\Classes\NEXORA.Pack\shell\open\command"; ValueType: string; ValueData: """{app}\{#AppExe}"" ""%1"""
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"

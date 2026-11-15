@@ -1,4 +1,5 @@
 using NEXORA.Core.Models;
+using NEXORA.Core.Servers;
 
 namespace NEXORA.Core.Abstractions;
 
@@ -11,3 +12,5 @@ public interface ISecretProtector { string Protect(string plain); string Unprote
 public sealed record StoredAccount(string RefreshToken);
 
 public interface IAccountStore { StoredAccount? Load(); void Save(StoredAccount account); void Clear(); }
+
+public interface IServerStore { List<ServerEntry> Load(); void Save(IEnumerable<ServerEntry> servers); }

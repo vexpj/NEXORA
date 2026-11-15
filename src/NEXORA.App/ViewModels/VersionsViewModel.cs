@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using NEXORA.App.Mvvm;
 using NEXORA.Core.Minecraft;
 using NEXORA.Core.Models;
+using NEXORA.Core.Packs;
 using NEXORA.Infrastructure.Loaders;
 using NEXORA.Infrastructure.Minecraft;
 
@@ -39,6 +40,10 @@ public sealed class VersionsViewModel : PageViewModel
         DeleteVersionCommand = new RelayCommand(DeleteVersion, () => !_busy && SelectedVersion?.IsInstalled == true);
         CreateProfileCommand = new RelayCommand(CreateProfile, () => SelectedVersion is not null);
         DeleteProfileCommand = new RelayCommand(p => { if (p is GameProfile gp) DeleteProfile(gp); });
+        LoadPackCodeCommand = new RelayCommand(LoadPackCode);
+        ConfirmImportCommand = new AsyncRelayCommand(ImportPackAsync, () => _pendingPack is not null && !_busy, ex => { PackStatus = "Ошибка: " + ErrorText.From(ex); _busy = false; Progress = 0; });
+        CancelImportCommand = new RelayCommand(ClearPending);
+        CopyShareCodeCommand = new RelayCommand(p => { if (p is GameProfile gp) CopyShareCode(gp); });
         _ = LoadAsync();
     }
 
@@ -52,6 +57,115 @@ public sealed class VersionsViewModel : PageViewModel
     public RelayCommand DeleteVersionCommand { get; }
     public RelayCommand CreateProfileCommand { get; }
     public RelayCommand DeleteProfileCommand { get; }
+    public RelayCommand LoadPackCodeCommand { get; }
+    public AsyncRelayCommand ConfirmImportCommand { get; }
+    public RelayCommand CancelImportCommand { get; }
+    public RelayCommand CopyShareCodeCommand { get; }
+
+    // ---------- обмен сборками ----------
+    private PackManifest? _pendingPack;
+    private string? _pendingZip;
+    private string _packCode = "", _packStatus = "";
+    private bool _includeConfigs;
+    private PackPreview? _pending;
+
+    public PackPreview? Pending { get => _pending; private set { if (SetProperty(ref _pending, value)) OnPropertyChanged(nameof(HasPending)); } }
+    public bool HasPending => Pending is not null;
+    public string PackCodeInput { get => _packCode; set => SetProperty(ref _packCode, value); }
+    public string PackStatus { get => _packStatus; private set => SetProperty(ref _packStatus, value); }
+    public bool IncludeConfigs { get => _includeConfigs; set => SetProperty(ref _includeConfigs, value); }
+
+    /// <summary>Открывает файл сборки (двойной щелчок по .nexora-pack или кнопка «Импорт»). Установка начнётся только после подтверждения.</summary>
+    public void LoadPackFile(string path)
+    {
+        try { SetPending(_s.Packs.ReadFile(path), path); }
+        catch (InvalidDataException ex) { PackStatus = ex.Message; ClearPending(); }
+    }
+
+    private void LoadPackCode()
+    {
+        try { SetPending(_s.Packs.ReadCode(PackCodeInput), null); }
+        catch (InvalidDataException ex) { PackStatus = ex.Message; ClearPending(); }
+    }
+
+    private void SetPending(PackManifest m, string? zip)
+    {
+        _pendingPack = m; _pendingZip = zip;
+        var ver = string.IsNullOrEmpty(m.LoaderVersion) ? "" : " " + m.LoaderVersion;
+        var mr = m.Mods.Count(x => x.Source == "Modrinth"); var cf = m.Mods.Count(x => x.Source == "CurseForge");
+        Pending = new PackPreview(
+            $"Сборка «{m.Name}»",
+            $"Minecraft {m.MinecraftVersion}  ·  {(m.Loader == LoaderType.Vanilla ? "без модов" : m.Loader + ver)}",
+            $"Модов: {m.Mods.Count} (Modrinth: {mr}, CurseForge: {cf}). Каждый файл будет скачан с официального сайта и проверен по контрольной сумме." +
+            (m.HasConfigs ? " В сборку включены настройки модов." : ""),
+            string.Join(", ", m.Mods.Take(15).Select(x => x.FileName)) + (m.Mods.Count > 15 ? $" и ещё {m.Mods.Count - 15}…" : ""));
+        PackStatus = "Проверьте сборку и подтвердите установку.";
+    }
+
+    private void ClearPending() { _pendingPack = null; _pendingZip = null; Pending = null; }
+
+    private async Task ImportPackAsync()
+    {
+        var m = _pendingPack!; var zip = _pendingZip;
+        _busy = true;
+        try
+        {
+            var progress = new Progress<InstallProgress>(p => { PackStatus = p.Stage; Progress = p.Fraction * 100; });
+            var profile = await Task.Run(() => _s.Packs.ImportAsync(m, zip, progress, CancellationToken.None));
+            profile.Name = UniqueName(profile.Name);
+            Profiles.Add(profile);
+            ClearPending();
+            PackStatus = $"Сборка «{profile.Name}» установлена. Minecraft и загрузчик скачаются при первом запуске.";
+        }
+        finally { _busy = false; Progress = 0; }
+    }
+
+    private string UniqueName(string name)
+    {
+        var n = name; var i = 2;
+        while (Profiles.Items.Any(p => p.Name == n)) n = $"{name} ({i++})";
+        return n;
+    }
+
+    /// <summary>Сохраняет сборку в файл. Вызывается из кода окна после выбора места сохранения.</summary>
+    public void ExportPack(GameProfile p, string path)
+    {
+        try
+        {
+            var r = _s.Packs.ExportFile(p, path, IncludeConfigs);
+            PackStatus = $"Сборка сохранена: модов {r.Exported}" + (r.ConfigFiles > 0 ? $", файлов настроек {r.ConfigFiles}" : "") +
+                         (r.SkippedManual.Count > 0 ? $". Не включены моды, добавленные вручную (их нельзя скачать по ссылке): {string.Join(", ", r.SkippedManual.Take(5))}" : "") + ".";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { PackStatus = "Не удалось сохранить: " + ex.Message; }
+    }
+
+    private void CopyShareCode(GameProfile p)
+    {
+        var code = _s.Packs.ExportCode(p, out var skipped);
+        PackStatus = Ui.CopyText(code)
+            ? $"Код сборки скопирован ({code.Length} символов)." + (code.Length > 1900 ? " Он длинный для чата — отправьте лучше файл." : "") +
+              (skipped.Count > 0 ? $" Моды, добавленные вручную, не включены: {skipped.Count}." : "")
+            : "Не удалось скопировать: буфер обмена занят другой программой.";
+    }
+
+    /// <summary>Копирует выбранную картинку в папку данных лаунчера и назначает её профилю.</summary>
+    public void SetProfileIcon(GameProfile p, string sourcePath)
+    {
+        try
+        {
+            var ext = Path.GetExtension(sourcePath).ToLowerInvariant();
+            if (ext is not (".png" or ".jpg" or ".jpeg" or ".bmp" or ".gif")) { Status = "Подходят изображения PNG, JPG, BMP, GIF."; return; }
+            if (new FileInfo(sourcePath).Length > 5 * 1024 * 1024) { Status = "Картинка слишком большая (максимум 5 МБ)."; return; }
+            var dir = Path.Combine(_s.Paths.DataDir, "icons");
+            Directory.CreateDirectory(dir);
+            var dest = Path.Combine(dir, p.Id + ext);
+            File.Copy(sourcePath, dest, overwrite: true);
+            p.IconPath = dest;
+            Profiles.Touch(p);
+            Status = "Картинка профиля обновлена.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { Status = "Не удалось сохранить картинку: " + ex.Message; }
+    }
 
     public bool ShowAll { get => _showAll; set { if (SetProperty(ref _showAll, value)) ApplyFilter(); } }
     public string Status { get => _status; private set => SetProperty(ref _status, value); }
@@ -157,3 +271,5 @@ public sealed class VersionsViewModel : PageViewModel
 
     private void Fail(Exception ex) { Status = "Ошибка: " + ErrorText.From(ex); _busy = false; Progress = 0; }
 }
+
+public sealed record PackPreview(string Title, string Details, string Summary, string ModList);

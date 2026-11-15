@@ -17,6 +17,8 @@ public sealed class GameProfile
     public string? InstalledVersionId { get; set; }
     public int? RamMb { get; set; }
     public string? JvmArgs { get; set; }
+    /// <summary>Путь к своей картинке сборки (копия в папке данных лаунчера).</summary>
+    public string? IconPath { get; set; }
 
     [JsonIgnore] public string LaunchVersionId => InstalledVersionId ?? MinecraftVersion;
     [JsonIgnore] public string Display =>

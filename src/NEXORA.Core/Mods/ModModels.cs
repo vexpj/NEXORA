@@ -37,4 +37,4 @@ public interface IModCatalog
     Task<ModFile?> GetBestFileAsync(string projectId, string mcVersion, LoaderType loader, CancellationToken ct);
 }
 
-public sealed record InstalledMod(string FileName, bool Enabled, string? Title, string? Version);
+public sealed record InstalledMod(string FileName, bool Enabled, string? Title, string? Version, string? Id = null);

@@ -44,7 +44,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Border Width="44" Height="44" CornerRadius="8" Background="{StaticResource SecondarySurfaceBrush}" Margin="0,0,12,0" VerticalAlignment="Top">
+                                <Border Width="44" Height="44" CornerRadius="8" Background="{DynamicResource SecondarySurfaceBrush}" Margin="0,0,12,0" VerticalAlignment="Top">
                                     <Image Source="{Binding IconUrl}" Stretch="UniformToFill" />
                                 </Border>
                                 <StackPanel Grid.Column="1">

@@ -21,7 +21,7 @@
                     <CheckBox Content="Снапшоты и старые версии" IsChecked="{Binding ShowAll}" Margin="0,0,0,10" />
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-                    <ProgressBar Value="{Binding Progress}" Maximum="100" />
+                    <ProgressBar Value="{Binding Progress, Mode=OneWay}" Maximum="100" />
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                         <Button Content="Установить" Command="{Binding InstallCommand}" Style="{StaticResource AccentButton}" Padding="18,8" FontSize="13" Margin="0,0,8,0" />
                         <Button Content="Удалить" Command="{Binding DeleteVersionCommand}" Style="{StaticResource GhostButton}" Margin="0,0,8,0" />
@@ -60,18 +60,55 @@
                             <DataTemplate>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                    <Button Grid.Column="1" Content="Удалить" Style="{StaticResource GhostButton}" Padding="10,5" FontSize="12"
-                                            Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                            CommandParameter="{Binding}" />
+                                    <Border Width="44" Height="44" CornerRadius="8" Background="{DynamicResource SecondarySurfaceBrush}" Margin="0,0,12,0" ClipToBounds="True" VerticalAlignment="Top">
+                                        <Image Source="{Binding IconPath}" Stretch="UniformToFill" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" />
+                                        <WrapPanel Margin="0,6,0,0">
+                                            <Button Content="Файл…" ToolTip="Сохранить сборку в файл" Style="{StaticResource GhostButton}" Padding="9,4" FontSize="12" Margin="0,0,6,4" Click="ExportPack_Click" />
+                                            <Button Content="Код" ToolTip="Скопировать код сборки" Style="{StaticResource GhostButton}" Padding="9,4" FontSize="12" Margin="0,0,6,4"
+                                                    Command="{Binding DataContext.CopyShareCodeCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                    CommandParameter="{Binding}" />
+                                            <Button Content="Картинка…" Style="{StaticResource GhostButton}" Padding="9,4" FontSize="12" Margin="0,0,6,4" Click="SetIcon_Click" />
+                                            <Button Content="Удалить" Style="{StaticResource GhostButton}" Padding="9,4" FontSize="12" Margin="0,0,0,4"
+                                                    Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                    CommandParameter="{Binding}" />
+                                        </WrapPanel>
+                                    </StackPanel>
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
                     <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,16,0,0" />
+
+                    <TextBlock Text="Обмен сборками" Style="{StaticResource SectionTitle}" Margin="0,24,0,6" />
+                    <TextBlock Text="Сборка — это список модов со ссылками и контрольными суммами, а не сами файлы: друг скачает всё с официальных сайтов и NEXORA всё проверит." Style="{StaticResource Caption}" Margin="0,0,0,10" />
+                    <CheckBox Content="Включать настройки модов (config), без ключей и токенов" IsChecked="{Binding IncludeConfigs}" Margin="0,0,0,12" />
+                    <Button Content="Открыть файл сборки…" Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Click="ImportPackFile_Click" />
+                    <TextBlock Text="…или вставьте код сборки" Style="{StaticResource Caption}" Margin="0,12,0,4" />
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Content="Прочитать" Command="{Binding LoadPackCodeCommand}" Style="{StaticResource GhostButton}" Margin="8,0,0,0" />
+                        <TextBox Text="{Binding PackCodeInput, UpdateSourceTrigger=PropertyChanged}" />
+                    </DockPanel>
+
+                    <Border Background="{DynamicResource SecondarySurfaceBrush}" CornerRadius="10" Padding="16" Margin="0,14,0,0"
+                            Visibility="{Binding HasPending, Converter={StaticResource BoolToVis}}">
+                        <StackPanel DataContext="{Binding Pending}">
+                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Details}" Style="{StaticResource Caption}" Margin="0,2,0,8" />
+                            <TextBlock Text="{Binding Summary}" Style="{StaticResource Caption}" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <TextBlock Text="{Binding ModList}" Style="{StaticResource Caption}" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0" Visibility="{Binding HasPending, Converter={StaticResource BoolToVis}}">
+                        <Button Content="Установить сборку" Command="{Binding ConfirmImportCommand}" Style="{StaticResource AccentButton}" Padding="18,8" FontSize="13" Margin="0,0,8,0" />
+                        <Button Content="Отмена" Command="{Binding CancelImportCommand}" Style="{StaticResource GhostButton}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding PackStatus}" Style="{StaticResource Caption}" Margin="0,12,0,0" />
                 </StackPanel>
             </ScrollViewer>
         </Border>

@@ -31,4 +31,15 @@ public sealed class ProfilesModel : ObservableObject
     }
 
     public void Save() => _store.Save(Items);
+
+    /// <summary>Обновляет отображение профиля после изменения его свойств (например, картинки).</summary>
+    public void Touch(GameProfile p)
+    {
+        var i = Items.IndexOf(p);
+        if (i < 0) return;
+        var wasSelected = Selected == p;
+        Items[i] = p;
+        if (wasSelected) Selected = p;
+        Save();
+    }
 }

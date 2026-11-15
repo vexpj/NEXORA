@@ -18,6 +18,7 @@ public sealed class LauncherSettings
     /// <summary>Личный ключ CurseForge API. В файл пишется только в зашифрованном виде.</summary>
     [JsonIgnore] public string? CurseForgeApiKey { get; set; }
     public string? CurseForgeApiKeyProtected { get; set; }
+    public NEXORA.Core.Appearance.AppearanceSettings Appearance { get; set; } = new();
 
     public static string DefaultGameDirectory() =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".nexora");
@@ -29,6 +30,7 @@ public sealed class LauncherSettings
         JavaPath = string.IsNullOrWhiteSpace(JavaPath) ? null : JavaPath.Trim();
         MicrosoftClientId = string.IsNullOrWhiteSpace(MicrosoftClientId) ? null : MicrosoftClientId.Trim();
         CurseForgeApiKey = string.IsNullOrWhiteSpace(CurseForgeApiKey) ? null : CurseForgeApiKey.Trim();
+        Appearance = (Appearance ?? new()).Normalize();
         return this;
     }
 }

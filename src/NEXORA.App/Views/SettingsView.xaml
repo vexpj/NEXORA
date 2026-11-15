@@ -10,7 +10,7 @@
                     <StackPanel>
                         <TextBlock Text="Игра" Style="{StaticResource SectionTitle}" />
                         <TextBlock Text="Оперативная память" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding RamMb, StringFormat={}{0} МБ}" Foreground="{StaticResource AccentBrush}" Margin="0,4,0,0" />
+                        <TextBlock Text="{Binding RamMb, StringFormat={}{0} МБ}" Foreground="{DynamicResource AccentBrush}" Margin="0,4,0,0" />
                         <Slider Minimum="{Binding MinRamMb}" Maximum="{Binding MaxRamMb}" Value="{Binding RamMb, Mode=TwoWay}"
                                 TickFrequency="512" IsSnapToTickEnabled="True" Margin="0,8,0,0" />
 
@@ -31,6 +31,35 @@
                             <Button Content="Найти установленные Java" Command="{Binding DetectJavaCommand}" Style="{StaticResource GhostButton}" Margin="0,0,10,0" />
                             <ComboBox ItemsSource="{Binding FoundJava}" SelectedItem="{Binding SelectedJava, Mode=TwoWay}" DisplayMemberPath="Display" Width="300" />
                         </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Оформление" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Text="Цветовая схема" FontWeight="SemiBold" Margin="0,0,0,6" />
+                        <ComboBox ItemsSource="{Binding ThemeNames}" SelectedItem="{Binding SelectedTheme, Mode=TwoWay}" />
+
+                        <TextBlock Text="Свой цвет акцента (необязательно)" FontWeight="SemiBold" Margin="0,16,0,6" />
+                        <TextBox Text="{Binding AccentHex, UpdateSourceTrigger=PropertyChanged}" MaxWidth="200" HorizontalAlignment="Left" />
+                        <TextBlock Text="Формат #RRGGBB, например #FF6B35. Пусто — цвет из схемы." Style="{StaticResource Caption}" Margin="0,4,0,0" />
+
+                        <TextBlock Text="Фоновая картинка" FontWeight="SemiBold" Margin="0,16,0,6" />
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Убрать" Command="{Binding ClearBackgroundCommand}" Style="{StaticResource GhostButton}" Margin="8,0,0,0" />
+                            <Button DockPanel.Dock="Right" Content="Обзор…" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="BrowseBackground_Click" />
+                            <TextBox Text="{Binding BackgroundImagePath, UpdateSourceTrigger=PropertyChanged}" />
+                        </DockPanel>
+                        <TextBlock Text="Яркость фона" Style="{StaticResource Caption}" Margin="0,10,0,0" />
+                        <Slider Minimum="0" Maximum="1" TickFrequency="0.05" IsSnapToTickEnabled="True" Value="{Binding BackgroundOpacity, Mode=TwoWay}" />
+
+                        <CheckBox Content="Плавные анимации" IsChecked="{Binding AnimationsEnabled}" Margin="0,14,0,0" />
+                        <CheckBox Content="Меню справа" IsChecked="{Binding SidebarRight}" Margin="0,10,0,0" />
+                        <CheckBox Content="Компактное меню (только значки)" IsChecked="{Binding CompactSidebar}" Margin="0,10,0,0" />
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Content="Сбросить оформление" Command="{Binding ResetAppearanceCommand}" Style="{StaticResource GhostButton}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding AppearanceNote}" Style="{StaticResource Caption}" Margin="0,8,0,0" />
                     </StackPanel>
                 </Border>
 

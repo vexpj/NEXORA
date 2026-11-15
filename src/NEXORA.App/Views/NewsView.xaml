@@ -13,7 +13,7 @@
             <TextBlock Text="Новости и обновления" Style="{StaticResource PageTitle}" />
         </DockPanel>
         <StackPanel Grid.Row="1" Margin="0,8,0,16">
-            <TextBlock Text="{Binding LauncherInfo}" Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding LauncherInfo}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" />
             <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
         </StackPanel>
 
@@ -27,7 +27,7 @@
                                 <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0">
                                     <Run Text="{Binding Type, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding Version, Mode=OneWay}" /><Run Text="  ·  " /><Run Text="{Binding Date, Mode=OneWay}" />
                                 </TextBlock>
-                                <TextBlock Text="{Binding Text}" Style="{StaticResource Caption}" Margin="0,8,0,0" Foreground="{StaticResource PrimaryTextBrush}" />
+                                <TextBlock Text="{Binding Text}" Style="{StaticResource Caption}" Margin="0,8,0,0" Foreground="{DynamicResource PrimaryTextBrush}" />
                             </StackPanel>
                         </Border>
                     </DataTemplate>

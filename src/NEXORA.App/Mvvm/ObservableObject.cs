@@ -25,6 +25,12 @@ public abstract class ObservableObject : INotifyPropertyChanged
 /// <summary>Выполняет действие в потоке интерфейса (события служб могут приходить из других потоков).</summary>
 public static class Ui
 {
+    public static bool CopyText(string text)
+    {
+        try { Clipboard.SetText(text); return true; }
+        catch (System.Runtime.InteropServices.ExternalException) { return false; }   // буфер обмена занят другой программой
+    }
+
     public static void Run(Action action)
     {
         var d = Application.Current?.Dispatcher;

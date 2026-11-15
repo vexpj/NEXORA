@@ -12,7 +12,11 @@ public sealed class ModInstaller
 {
     private readonly LauncherPaths _paths;
     private readonly FileDownloader _dl;
-    public ModInstaller(LauncherPaths paths, FileDownloader dl) { _paths = paths; _dl = dl; }
+    private readonly ModProvenanceStore _prov;
+    public ModInstaller(LauncherPaths paths, FileDownloader dl, ModProvenanceStore? prov = null)
+    { _paths = paths; _dl = dl; _prov = prov ?? new ModProvenanceStore(paths); }
+
+    public ModProvenanceStore Provenance => _prov;
 
     public static string SafeFileName(string name)
     {
@@ -34,6 +38,12 @@ public sealed class ModInstaller
         var hash = file.Sha512 is not null ? new FileHash("sha512", file.Sha512) : file.Sha1 is not null ? new FileHash("sha1", file.Sha1) : null;
         await _dl.DownloadAsync(file.DownloadUrl, dest, hash, ct);
         if (File.Exists(dest + ".disabled")) File.Delete(dest + ".disabled");
+        // Запоминаем, откуда мод, чтобы им можно было делиться сборкой.
+        _prov.Upsert(profile.Id, new ModRecord
+        {
+            FileName = name, Source = file.Source, ProjectId = file.ProjectId, Version = file.Version,
+            Url = file.DownloadUrl, Sha1 = file.Sha1, Sha512 = file.Sha512,
+        });
 
         var installed = new List<string> { name };
         if (depth < 2)
@@ -55,8 +65,8 @@ public sealed class ModInstaller
         var result = new List<InstalledMod>();
         foreach (var f in Directory.GetFiles(dir).Where(f => f.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".jar.disabled", StringComparison.OrdinalIgnoreCase)).OrderBy(f => f))
         {
-            var (title, ver) = ReadMeta(f);
-            result.Add(new InstalledMod(Path.GetFileName(f), !f.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase), title, ver));
+            var (title, ver, id) = ReadMeta(f);
+            result.Add(new InstalledMod(Path.GetFileName(f), !f.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase), title, ver, id));
         }
         return result;
     }
@@ -70,12 +80,16 @@ public sealed class ModInstaller
         if (cur != target) File.Move(cur, target, overwrite: true);
     }
 
-    public void Delete(GameProfile profile, string fileName) => File.Delete(GameInstaller_SafePath(_paths.ModsDir(profile.Id), fileName));
+    public void Delete(GameProfile profile, string fileName)
+    {
+        File.Delete(GameInstaller_SafePath(_paths.ModsDir(profile.Id), fileName));
+        _prov.Remove(profile.Id, Path.GetFileName(fileName).Replace(".disabled", "", StringComparison.OrdinalIgnoreCase));
+    }
 
     private static string GameInstaller_SafePath(string dir, string fileName) =>
         NEXORA.Infrastructure.Minecraft.GameInstaller.SafeCombine(dir, Path.GetFileName(fileName));
 
-    private static (string? title, string? version) ReadMeta(string path)
+    private static (string? title, string? version, string? id) ReadMeta(string path)
     {
         try
         {
@@ -84,7 +98,7 @@ public sealed class ModInstaller
             {
                 using var r = new StreamReader(fe.Open());
                 var j = JsonNode.Parse(r.ReadToEnd());
-                return (j?["name"]?.GetValue<string>() ?? j?["id"]?.GetValue<string>(), j?["version"]?.GetValue<string>());
+                return (j?["name"]?.GetValue<string>() ?? j?["id"]?.GetValue<string>(), j?["version"]?.GetValue<string>(), j?["id"]?.GetValue<string>());
             }
             var toml = zip.GetEntry("META-INF/neoforge.mods.toml") ?? zip.GetEntry("META-INF/mods.toml");
             if (toml is not null)
@@ -93,10 +107,11 @@ public sealed class ModInstaller
                 var t = r.ReadToEnd();
                 var name = Regex.Match(t, "displayName\\s*=\\s*\"([^\"]+)\"");
                 var ver = Regex.Match(t, "(?m)^\\s*version\\s*=\\s*\"([^\"$]+)\"");
-                return (name.Success ? name.Groups[1].Value : null, ver.Success ? ver.Groups[1].Value : null);
+                var mid = Regex.Match(t, "modId\\s*=\\s*\"([^\"]+)\"");
+                return (name.Success ? name.Groups[1].Value : null, ver.Success ? ver.Groups[1].Value : null, mid.Success ? mid.Groups[1].Value : null);
             }
         }
         catch (Exception ex) when (ex is InvalidDataException or IOException or System.Text.Json.JsonException) { }
-        return (null, null);
+        return (null, null, null);
     }
 }
