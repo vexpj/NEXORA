@@ -37,6 +37,9 @@
                         <TextBlock Text="Minecraft Launcher" Style="{StaticResource Caption}"
                                    Visibility="{Binding ShowNavLabels, Converter={StaticResource BoolToVis}}" />
                     </StackPanel>
+                    <Button DockPanel.Dock="Bottom" Content="{Binding UpdateButtonText}" Command="{Binding ShowUpdatesCommand}"
+                            Style="{StaticResource AccentButton}" Padding="10,8" FontSize="12" Margin="0,8,0,0"
+                            Visibility="{Binding UpdateAvailable, Converter={StaticResource BoolToVis}}" />
                     <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}"
                              ItemContainerStyle="{StaticResource NavItem}" Background="Transparent" BorderThickness="0"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" />

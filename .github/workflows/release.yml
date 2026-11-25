@@ -1,0 +1,52 @@
+name: Release
+
+# Как выпустить обновление: поднять Version в Directory.Build.props -> Commit/Push ->
+# на GitHub: Releases -> Draft a new release -> тег v<версия> (например v0.3.3) -> Publish release.
+# Сборка запустится сама и прикрепит NEXORA-Setup.exe и NEXORA-Setup.exe.sha256 к релизу.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write   # нужно только этому процессу: загрузка файлов в релиз
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Check tag matches version
+        shell: pwsh
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          $version = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.Version
+          if ("v$version" -ne $env:TAG) { throw "Тег $env:TAG не совпадает с версией v$version в Directory.Build.props" }
+
+      - name: Secret scan
+        shell: pwsh
+        env:
+          PYTHONUTF8: "1"
+        run: python build/check_secrets.py
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup -y --no-progress
+
+      - name: Build (tests + publish + installer)
+        shell: pwsh
+        run: ./build/build.ps1
+
+      - name: Attach files to release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$env:TAG" dist/NEXORA-Setup.exe dist/NEXORA-Setup.exe.sha256 dist/NEXORA.exe --clobber

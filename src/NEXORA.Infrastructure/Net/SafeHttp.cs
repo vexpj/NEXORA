@@ -8,6 +8,19 @@ public sealed class UntrustedHostException : Exception
 }
 
 /// <summary>Разрешены только HTTPS и заранее известные хосты (Mojang, Microsoft, Fabric, Forge, NeoForge, Modrinth, CurseForge).</summary>
+/// <summary>Адреса только для обновления самого лаунчера. Намеренно отделены от списка для скачивания модов.</summary>
+public static class UpdateHostPolicy
+{
+    private static readonly HashSet<string> Allowed = new(StringComparer.OrdinalIgnoreCase)
+        { "api.github.com", "github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com" };
+
+    public static Uri Require(Uri uri)
+    {
+        if (uri.Scheme != Uri.UriSchemeHttps || !Allowed.Contains(uri.Host)) throw new UntrustedHostException(uri.Host);
+        return uri;
+    }
+}
+
 public static class HostPolicy
 {
     private static readonly HashSet<string> Allowed = new(StringComparer.OrdinalIgnoreCase)
@@ -34,9 +47,11 @@ public static class HostPolicy
 public sealed class SafeHttp
 {
     private readonly HttpClient _http;
+    private readonly Func<Uri, Uri> _policy;
 
-    public SafeHttp(HttpClient? http = null)
+    public SafeHttp(HttpClient? http = null, Func<Uri, Uri>? policy = null)
     {
+        _policy = policy ?? HostPolicy.Require;
         _http = http ?? new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromMinutes(10) };
         if (!_http.DefaultRequestHeaders.Contains("User-Agent"))
             _http.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "vexpj/NEXORA/0.2.0 (Minecraft launcher)"); // формат, который просит Modrinth
@@ -45,7 +60,7 @@ public sealed class SafeHttp
     /// <summary>GET с ручной проверкой каждого перенаправления.</summary>
     public async Task<HttpResponseMessage> GetAsync(string url, CancellationToken ct, Action<HttpRequestMessage>? configure = null)
     {
-        var uri = HostPolicy.Require(url);
+        var uri = _policy(new Uri(url));
         for (var hop = 0; hop < 6; hop++)
         {
             var req = new HttpRequestMessage(HttpMethod.Get, uri);
@@ -55,7 +70,7 @@ public sealed class SafeHttp
                 or HttpStatusCode.TemporaryRedirect or HttpStatusCode.PermanentRedirect && resp.Headers.Location is { } loc)
             {
                 resp.Dispose();
-                uri = HostPolicy.Require(loc.IsAbsoluteUri ? loc : new Uri(uri, loc));
+                uri = _policy(loc.IsAbsoluteUri ? loc : new Uri(uri, loc));
                 continue;
             }
             return resp;
@@ -74,7 +89,7 @@ public sealed class SafeHttp
     /// <summary>Для POST/PUT/DELETE (без перенаправлений).</summary>
     public Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
     {
-        HostPolicy.Require(req.RequestUri!);
+        _policy(req.RequestUri!);
         return _http.SendAsync(req, ct);
     }
 }

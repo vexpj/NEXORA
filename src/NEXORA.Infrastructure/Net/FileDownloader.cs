@@ -30,7 +30,7 @@ public sealed class FileDownloader
     private readonly SafeHttp _http;
     public FileDownloader(SafeHttp http) => _http = http;
 
-    public async Task DownloadAsync(string url, string dest, FileHash? hash, CancellationToken ct, int retries = 3)
+    public async Task DownloadAsync(string url, string dest, FileHash? hash, CancellationToken ct, int retries = 3, long maxBytes = 0)
     {
         if (hash is not null && File.Exists(dest) &&
             string.Equals(await Hashing.ComputeHexAsync(dest, hash.Algorithm, ct), hash.Hex, StringComparison.OrdinalIgnoreCase))
@@ -47,7 +47,17 @@ public sealed class FileDownloader
                     resp.EnsureSuccessStatusCode();
                     await using var src = await resp.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
                     await using var dst = File.Create(tmp);
-                    await src.CopyToAsync(dst, ct).ConfigureAwait(false);
+                    if (maxBytes > 0)
+                    {
+                        var buf = new byte[81920]; long total = 0; int n;
+                        while ((n = await src.ReadAsync(buf, ct).ConfigureAwait(false)) > 0)
+                        {
+                            total += n;
+                            if (total > maxBytes) throw new InvalidDataException("Файл больше допустимого размера.");
+                            await dst.WriteAsync(buf.AsMemory(0, n), ct).ConfigureAwait(false);
+                        }
+                    }
+                    else await src.CopyToAsync(dst, ct).ConfigureAwait(false);
                 }
                 if (hash is not null &&
                     !string.Equals(await Hashing.ComputeHexAsync(tmp, hash.Algorithm, ct), hash.Hex, StringComparison.OrdinalIgnoreCase))

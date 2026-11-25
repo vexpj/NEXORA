@@ -26,6 +26,8 @@ public abstract class ObservableObject : INotifyPropertyChanged
 public static class Ui
 {
     /// <summary>Выводит окно лаунчера на передний план (после входа в браузере).</summary>
+    public static void Shutdown() => Run(() => Application.Current?.Shutdown());
+
     public static void Activate() => Run(() => Application.Current?.MainWindow?.Activate());
 
     public static bool CopyText(string text)

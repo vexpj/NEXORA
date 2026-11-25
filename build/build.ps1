@@ -37,6 +37,10 @@ if (-not $iscc) { throw 'Inno Setup 6 не найден. Установите: w
 if ($LASTEXITCODE -ne 0) { throw 'ISCC завершился с ошибкой.' }
 
 Write-Host '4/4 Контрольные суммы...'
+# Файл для автообновления: лаунчер сверяет с ним скачанный установщик
+$setupFile = Join-Path $dist 'NEXORA-Setup.exe'
+$setupHash = (Get-FileHash $setupFile -Algorithm SHA256).Hash.ToLower()
+"$setupHash  NEXORA-Setup.exe" | Set-Content -Path ($setupFile + '.sha256') -Encoding ascii
 Copy-Item (Join-Path $root 'assets\NEXORA.ico') (Join-Path $dist 'NEXORA.ico')
 Get-ChildItem $dist -File | ForEach-Object {
     $h = (Get-FileHash $_.FullName -Algorithm SHA256).Hash

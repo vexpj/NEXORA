@@ -13,11 +13,16 @@ public sealed class NewsViewModel : PageViewModel
     {
         _s = s;
         RefreshCommand = new AsyncRelayCommand(LoadAsync, null, ex => Status = "Не удалось загрузить новости: " + ErrorText.From(ex));
+        CheckUpdatesCommand = new AsyncRelayCommand(() => _s.Updates.CheckAsync(false), () => !_s.Updates.IsBusy);
+        InstallUpdateCommand = new AsyncRelayCommand(_s.Updates.InstallAsync, () => _s.Updates.IsAvailable && !_s.Updates.IsBusy);
         RefreshCommand.Execute(null);
     }
 
     public ObservableCollection<NewsItem> Items { get; } = new();
     public AsyncRelayCommand RefreshCommand { get; }
+    public AsyncRelayCommand CheckUpdatesCommand { get; }
+    public AsyncRelayCommand InstallUpdateCommand { get; }
+    public UpdateModel Updates => _s.Updates;
     public string LauncherInfo => "NEXORA Launcher " + AppServices.LauncherVersion;
     public string Status { get => _status; private set => SetProperty(ref _status, value); }
 

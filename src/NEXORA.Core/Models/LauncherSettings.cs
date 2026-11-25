@@ -19,6 +19,7 @@ public sealed class LauncherSettings
     [JsonIgnore] public string? CurseForgeApiKey { get; set; }
     public string? CurseForgeApiKeyProtected { get; set; }
     public NEXORA.Core.Appearance.AppearanceSettings Appearance { get; set; } = new();
+    public bool AutoCheckUpdates { get; set; } = true;
 
     public static string DefaultGameDirectory() =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ".nexora");

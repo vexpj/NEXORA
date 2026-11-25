@@ -13,8 +13,19 @@
             <TextBlock Text="Новости и обновления" Style="{StaticResource PageTitle}" />
         </DockPanel>
         <StackPanel Grid.Row="1" Margin="0,8,0,16">
-            <TextBlock Text="{Binding LauncherInfo}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
+            <TextBlock Text="{Binding Status}" Style="{StaticResource Caption}" />
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0" Padding="20">
+                <StackPanel>
+                    <TextBlock Text="{Binding LauncherInfo}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Updates.Status}" Style="{StaticResource Caption}" Margin="0,6,0,0" />
+                    <TextBlock Text="{Binding Updates.Notes}" Style="{StaticResource Caption}" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,8,0,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <Button Content="Проверить обновления" Command="{Binding CheckUpdatesCommand}" Style="{StaticResource GhostButton}" Margin="0,0,8,0" />
+                        <Button Content="Скачать и установить" Command="{Binding InstallUpdateCommand}" Style="{StaticResource AccentButton}" Padding="18,8" FontSize="13"
+                                Visibility="{Binding Updates.IsAvailable, Converter={StaticResource BoolToVis}}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </StackPanel>
 
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">

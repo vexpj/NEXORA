@@ -15,14 +15,18 @@ using NEXORA.Infrastructure.Perf;
 using NEXORA.Infrastructure.Security;
 using NEXORA.Infrastructure.Servers;
 using NEXORA.Infrastructure.Storage;
+using NEXORA.Infrastructure.Updates;
+using NEXORA.Core.Updates;
 
 namespace NEXORA.App;
 
 /// <summary>Корень композиции: здесь создаются и связываются все службы.</summary>
 public sealed class AppServices
 {
-    public const string LauncherVersion = "0.3.1";
+    public static string LauncherVersion => AppVersion.Current;
 
+    public required UpdateService UpdateSvc { get; init; }
+    public UpdateModel Updates { get; private set; } = null!;
     public required ISettingsStore SettingsStore { get; init; }
     public required LauncherSettings Settings { get; init; }
     public required LauncherPaths Paths { get; init; }
@@ -74,8 +78,9 @@ public sealed class AppServices
         var prov = new ModProvenanceStore(paths);
         var mods = new ModInstaller(paths, dl, prov);
 
-        return new AppServices
+        var svc = new AppServices
         {
+            UpdateSvc = new UpdateService(UpdateService.CreateHttp(), Path.GetTempPath()),
             SettingsStore = settingsStore, Settings = settings, Paths = paths, Http = http,
             Versions = versions, Installer = installer, Java = java, Loaders = loaders,
             Launcher = new LaunchService(paths, installer, java, loaders),
@@ -91,5 +96,7 @@ public sealed class AppServices
             ServerStore = new JsonServerStore(Path.Combine(dataDir, "servers.json")),
             Pinger = new ServerPinger(),
         };
+        svc.Updates = new UpdateModel(svc);
+        return svc;
     }
 }

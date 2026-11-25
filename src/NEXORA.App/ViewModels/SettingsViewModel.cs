@@ -18,7 +18,7 @@ public sealed class SettingsViewModel : PageViewModel
     // оформление
     private string _theme, _accent, _bg, _appearanceNote = "";
     private double _bgOpacity;
-    private bool _anim, _sidebarRight, _compact;
+    private bool _anim, _sidebarRight, _compact, _autoUpdates;
 
     public SettingsViewModel(AppServices s) : base("Настройки", "\uE713")
     {
@@ -29,6 +29,7 @@ public sealed class SettingsViewModel : PageViewModel
         var a = c.Appearance;
         _theme = a.ThemeName; _accent = a.AccentHex ?? ""; _bg = a.BackgroundImagePath ?? "";
         _bgOpacity = a.BackgroundOpacity; _anim = a.AnimationsEnabled; _sidebarRight = a.SidebarRight; _compact = a.CompactSidebar;
+        _autoUpdates = c.AutoCheckUpdates;
         _loading = false;
 
         SaveCommand = new RelayCommand(Save);
@@ -51,6 +52,7 @@ public sealed class SettingsViewModel : PageViewModel
     public string JavaPath { get => _javaPath; set { if (SetProperty(ref _javaPath, value)) Status = ""; } }
     public string MicrosoftClientId { get => _clientId; set { if (SetProperty(ref _clientId, value)) Status = ""; } }
     public string CurseForgeApiKey { get => _cfKey; set { if (SetProperty(ref _cfKey, value)) Status = ""; } }
+    public bool AutoCheckUpdates { get => _autoUpdates; set { if (SetProperty(ref _autoUpdates, value)) Status = ""; } }
     public string Status { get => _status; private set => SetProperty(ref _status, value); }
     public string LogPreview { get => _logPreview; private set => SetProperty(ref _logPreview, value); }
     public string Version => "NEXORA Launcher " + AppServices.LauncherVersion;
@@ -111,14 +113,14 @@ public sealed class SettingsViewModel : PageViewModel
             {
                 RamMb = RamMb, GameDirectory = GameDirectory, JavaPath = JavaPath,
                 MicrosoftClientId = MicrosoftClientId, CurseForgeApiKey = CurseForgeApiKey,
-                Appearance = BuildAppearance(),
+                Appearance = BuildAppearance(), AutoCheckUpdates = AutoCheckUpdates,
             }.Normalize();
             _s.SettingsStore.Save(n);
 
             var folderChanged = !string.Equals(n.GameDirectory, _s.Settings.GameDirectory, StringComparison.OrdinalIgnoreCase);
             _s.Settings.RamMb = n.RamMb; _s.Settings.JavaPath = n.JavaPath;
             _s.Settings.MicrosoftClientId = n.MicrosoftClientId; _s.Settings.CurseForgeApiKey = n.CurseForgeApiKey;
-            _s.Settings.Appearance = n.Appearance;
+            _s.Settings.Appearance = n.Appearance; _s.Settings.AutoCheckUpdates = n.AutoCheckUpdates;
 
             RamMb = n.RamMb; JavaPath = n.JavaPath ?? ""; GameDirectory = n.GameDirectory;
             Status = folderChanged ? "Сохранено. Новая папка Minecraft будет использоваться после перезапуска лаунчера." : "Настройки сохранены";

@@ -22,7 +22,7 @@ public sealed class LaunchContext
     public string? ExtraJvmArgs { get; set; }
     public string? LoggingConfigPath { get; set; }
     public string LauncherName { get; set; } = "NEXORA";
-    public string LauncherVersion { get; set; } = "0.3.0";
+    public string LauncherVersion { get; set; } = NEXORA.Core.Updates.AppVersion.Current;
     /// <summary>Сервер, к которому нужно сразу подключиться при запуске.</summary>
     public ServerEndpoint? Server { get; set; }
 }
